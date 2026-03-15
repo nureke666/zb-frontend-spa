@@ -1,0 +1,1451 @@
+===== PROJECT STRUCTURE =====
+src
+├── api
+│   └── apiClient.ts
+├── App.tsx
+├── assets
+│   └── images
+├── components
+│   ├── layout
+│   │   ├── AuthLayout.tsx
+│   │   └── MainLayout.tsx
+│   └── ui
+├── features
+│   ├── application
+│   │   ├── ApplicationStatusTracker.tsx
+│   │   └── wizard
+│   │       ├── Step1Personal.tsx
+│   │       ├── Step2Education.tsx
+│   │       └── Step3Grants.tsx
+│   ├── auth
+│   │   ├── authSlice.ts
+│   │   └── LoginForm.tsx
+│   └── catalog
+│       ├── GrantFilters.tsx
+│       └── UniversityCard.tsx
+├── main.tsx
+├── pages
+│   ├── admin
+│   │   ├── AdminDashboard.tsx
+│   │   └── ApplicationsList.tsx
+│   ├── applicant
+│   │   ├── ApplyWizardPage.tsx
+│   │   ├── DashboardPage.tsx
+│   │   └── GrantsCatalogPage.tsx
+│   └── public
+│       ├── LandingPage.css
+│       ├── LandingPage.tsx
+│       ├── LoginPage.tsx
+│       └── RegisterPage.tsx
+├── routes
+│   ├── AppRouter.tsx
+│   └── ProtectedRoute.tsx
+├── store
+│   └── index.ts
+├── styles
+│   └── theme.ts
+├── types
+│   ├── api.types.ts
+│   └── user.types.ts
+└── utils
+    ├── formatters.ts
+    └── validators.ts
+
+21 directories, 30 files
+
+
+===== FILE CONTENTS =====
+
+
+
+=============================
+FILE: src/routes/ProtectedRoute.tsx
+=============================
+import { Navigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store';
+
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  allowedRoles?: ('APPLICANT' | 'ADMIN')[];
+}
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRoles }) => {
+  const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    return <Navigate to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+export default ProtectedRoute;
+
+=============================
+FILE: src/routes/AppRouter.tsx
+=============================
+
+
+=============================
+FILE: src/utils/formatters.ts
+=============================
+
+
+=============================
+FILE: src/utils/validators.ts
+=============================
+
+
+=============================
+FILE: src/store/index.ts
+=============================
+import { configureStore } from '@reduxjs/toolkit';
+import authReducer from '../features/auth/authSlice';
+
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+  },
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+=============================
+FILE: src/pages/admin/ApplicationsList.tsx
+=============================
+import { Box, Typography, Card, CardContent, Button, TextField, InputAdornment, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip, IconButton, Select, MenuItem, FormControl } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import SearchIcon from '@mui/icons-material/Search';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import SchoolIcon from '@mui/icons-material/School';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import FilterListIcon from '@mui/icons-material/FilterList';
+
+// Моковые данные для таблицы
+const applications =[
+  { id: 'A-2024-1045', name: 'Нурбол Касымов', iin: '020415******', score: 125, date: '12.03.2026', status: 'Одобрен' },
+  { id: 'A-2024-1044', name: 'Айгерим Сыздыкова', iin: '030822******', score: 118, date: '12.03.2026', status: 'На проверке' },
+  { id: 'A-2024-1043', name: 'Диас Маратов', iin: '010510******', score: 95, date: '11.03.2026', status: 'Отклонен' },
+  { id: 'A-2024-1042', name: 'Амина Серикова', iin: '040112******', score: 105, date: '11.03.2026', status: 'Одобрен' },
+  { id: 'A-2024-1041', name: 'Тимур Болатов', iin: '021105******', score: 130, date: '10.03.2026', status: 'Ожидание' },
+];
+
+// Функция для цвета бейджей
+const getStatusColor = (status: string) => {
+  switch (status) {
+    case 'Одобрен': return { bg: '#E6F4EA', text: '#137333' };
+    case 'На проверке': return { bg: '#FEF7E0', text: '#B06000' };
+    case 'Отклонен': return { bg: '#FCE8E6', text: '#C5221F' };
+    default: return { bg: '#F1F3F4', text: '#5F6368' };
+  }
+};
+
+const ApplicationsList = () => {
+  const navigate = useNavigate();
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+      
+      {/* ЛЕВЫЙ САЙДБАР */}
+      <Box sx={{ width: 260, backgroundColor: '#1A2B56', color: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ p: 3, mb: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#fff' }}>GrantFlow CRM</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 2 }}>
+          <Button startIcon={<DashboardIcon />} onClick={() => navigate('/admin')} sx={{ justifyContent: 'flex-start', color: '#A0AEC0', py: 1.5, '&:hover': { color: '#fff' } }}>Обзор</Button>
+          <Button startIcon={<AssignmentIcon />} sx={{ justifyContent: 'flex-start', color: '#fff', backgroundColor: 'rgba(255,255,255,0.1)', py: 1.5 }}>Заявки</Button>
+          <Button startIcon={<SchoolIcon />} sx={{ justifyContent: 'flex-start', color: '#A0AEC0', py: 1.5, '&:hover': { color: '#fff' } }}>ВУЗы</Button>
+          <Button startIcon={<BarChartIcon />} sx={{ justifyContent: 'flex-start', color: '#A0AEC0', py: 1.5, '&:hover': { color: '#fff' } }}>Отчеты</Button>
+        </Box>
+      </Box>
+
+      {/* ОСНОВНОЙ КОНТЕНТ */}
+      <Box sx={{ flexGrow: 1, p: 4, overflowY: 'auto', height: '100vh' }}>
+        
+        <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800, mb: 4 }}>Реестр заявок</Typography>
+
+        {/* Панель фильтров */}
+        <Card sx={{ borderRadius: 3, mb: 4, border: '1px solid #E2E8F0', boxShadow: 'none' }}>
+          <CardContent sx={{ display: 'flex', gap: 2, alignItems: 'center', p: 2 }}>
+            <TextField 
+              placeholder="Поиск по ИИН или ФИО..." 
+              size="small"
+              sx={{ flexGrow: 1 }}
+              InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
+            />
+            <FormControl size="small" sx={{ width: 200 }}>
+              <Select displayEmpty defaultValue="">
+                <MenuItem value=""><em>Все статусы</em></MenuItem>
+                <MenuItem value="Одобрен">Одобрен</MenuItem>
+                <MenuItem value="На проверке">На проверке</MenuItem>
+              </Select>
+            </FormControl>
+            <Button variant="outlined" startIcon={<FilterListIcon />} sx={{ color: '#4A5568', borderColor: '#E2E8F0' }}>
+              Фильтры
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* ТАБЛИЦА */}
+        <TableContainer component={Card} sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: 'none' }}>
+          <Table sx={{ minWidth: 650 }}>
+            <TableHead sx={{ backgroundColor: '#F1F5F9' }}>
+              <TableRow>
+                <TableCell sx={{ fontWeight: 600, color: '#4A5568' }}>ID Заявки</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4A5568' }}>ФИО Абитуриента</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4A5568' }}>ИИН</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4A5568' }}>Балл ЕНТ</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4A5568' }}>Дата подачи</TableCell>
+                <TableCell sx={{ fontWeight: 600, color: '#4A5568' }}>Статус</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 600, color: '#4A5568' }}>Действия</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {applications.map((row) => (
+                <TableRow key={row.id} hover>
+                  <TableCell sx={{ fontWeight: 600, color: '#1A2B56' }}>{row.id}</TableCell>
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell sx={{ color: '#4A5568' }}>{row.iin}</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold' }}>{row.score}</TableCell>
+                  <TableCell sx={{ color: '#4A5568' }}>{row.date}</TableCell>
+                  <TableCell>
+                    <Chip 
+                      label={row.status} 
+                      size="small"
+                      sx={{ 
+                        backgroundColor: getStatusColor(row.status).bg, 
+                        color: getStatusColor(row.status).text,
+                        fontWeight: 700, borderRadius: 1 
+                      }} 
+                    />
+                  </TableCell>
+                  <TableCell align="right">
+                    <IconButton size="small"><MoreVertIcon /></IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+      </Box>
+    </Box>
+  );
+};
+
+export default ApplicationsList;
+
+=============================
+FILE: src/pages/admin/AdminDashboard.tsx
+=============================
+import { Box, Typography, Card, CardContent, Grid, Button, TextField, InputAdornment, IconButton } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import SearchIcon from '@mui/icons-material/Search';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import SchoolIcon from '@mui/icons-material/School';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+
+// Моковые данные для графиков
+const regionData =[
+  { name: 'Алматы', count: 280 }, { name: 'Астана', count: 240 },
+  { name: 'Шымкент', count: 180 }, { name: 'Караганда', count: 150 },
+  { name: 'Актобе', count: 120 }, { name: 'Тараз', count: 90 },
+];
+
+const subjectData =[
+  { name: 'Математика', value: 27, color: '#3B82F6' },
+  { name: 'Физика', value: 21, color: '#8B5CF6' },
+  { name: 'Информатика', value: 16, color: '#06B6D4' },
+  { name: 'История', value: 13, color: '#10B981' },
+  { name: 'Биология', value: 11, color: '#F59E0B' },
+  { name: 'Химия', value: 11, color: '#EF4444' },
+];
+
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+      
+      {/* ЛЕВЫЙ САЙДБАР (Тёмно-синий) */}
+      <Box sx={{ width: 260, backgroundColor: '#1A2B56', color: '#fff', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ p: 3, mb: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#fff' }}>GrantFlow CRM</Typography>
+          <Typography variant="body2" sx={{ color: '#A0AEC0' }}>Система управления</Typography>
+        </Box>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, px: 2 }}>
+          <Button startIcon={<DashboardIcon />} sx={{ justifyContent: 'flex-start', color: '#fff', backgroundColor: 'rgba(255,255,255,0.1)', py: 1.5 }}>Обзор</Button>
+          <Button startIcon={<AssignmentIcon />} onClick={() => navigate('/admin/applications')} sx={{ justifyContent: 'flex-start', color: '#A0AEC0', py: 1.5, '&:hover': { color: '#fff' } }}>Заявки</Button>
+          <Button startIcon={<SchoolIcon />} sx={{ justifyContent: 'flex-start', color: '#A0AEC0', py: 1.5, '&:hover': { color: '#fff' } }}>ВУЗы</Button>
+          <Button startIcon={<BarChartIcon />} sx={{ justifyContent: 'flex-start', color: '#A0AEC0', py: 1.5, '&:hover': { color: '#fff' } }}>Отчеты</Button>
+        </Box>
+      </Box>
+
+      {/* ОСНОВНОЙ КОНТЕНТ */}
+      <Box sx={{ flexGrow: 1, p: 4, overflowY: 'auto', height: '100vh' }}>
+        
+        {/* Шапка (Header) */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <TextField 
+            variant="outlined" 
+            placeholder="Поиск заявок, абитуриентов, ВУЗов..." 
+            size="small"
+            sx={{ width: 400, backgroundColor: '#fff', borderRadius: 1 }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment> }}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Button variant="contained" startIcon={<FileDownloadIcon />} sx={{ backgroundColor: '#1A2B56', '&:hover': { backgroundColor: '#111D3D' }, textTransform: 'none' }}>
+              Экспорт в Excel
+            </Button>
+            <IconButton><NotificationsIcon sx={{ color: '#4A5568' }}/></IconButton>
+            <Box sx={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#E2E8F0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Typography sx={{ fontWeight: 'bold', color: '#1A2B56' }}>AD</Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* KPI Карточки */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {[
+            { title: 'Всего заявок', value: '1,245', stat: '+12.5%', statColor: '#00C853', iconColor: '#3B82F6' },
+            { title: 'Одобрено', value: '300', stat: '+8.3%', statColor: '#00C853', iconColor: '#10B981' },
+            { title: 'Отклонено', value: '45', stat: '-3.2%', statColor: '#EF4444', iconColor: '#EF4444' },
+            { title: 'Свободных грантов', value: '850', stat: '-15.8%', statColor: '#EF4444', iconColor: '#8B5CF6' }
+          ].map((kpi, idx) => (
+            <Grid size={{ xs: 12, sm: 6, md: 3 }} key={idx}>
+              <Card sx={{ borderRadius: 3, boxShadow: '0px 4px 12px rgba(0,0,0,0.02)', border: '1px solid #E2E8F0' }}>
+                <CardContent>
+                  <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600, mb: 1 }}>{kpi.title}</Typography>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800 }}>{kpi.value}</Typography>
+                    <Box sx={{ width: 40, height: 40, borderRadius: 2, backgroundColor: `${kpi.iconColor}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <AssignmentIcon sx={{ color: kpi.iconColor }} />
+                    </Box>
+                  </Box>
+                  <Typography variant="caption" sx={{ color: kpi.statColor, fontWeight: 700, mt: 2, display: 'block' }}>
+                    {kpi.stat} <span style={{ color: '#A0AEC0', fontWeight: 500 }}>за месяц</span>
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* ГРАФИКИ */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          {/* Столбчатая диаграмма */}
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: 'none', height: 400 }}>
+              <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, mb: 3 }}>Заявки по регионам</Typography>
+                <Box sx={{ flexGrow: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={regionData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                      <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#4A5568' }} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#4A5568' }} />
+                      <RechartsTooltip cursor={{ fill: '#F1F5F9' }} />
+                      <Bar dataKey="count" fill="#1A2B56" radius={[4, 4, 0, 0]} barSize={40} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          
+          {/* Круговая диаграмма */}
+          <Grid size={{ xs: 12, md: 5 }}>
+            <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: 'none', height: 400 }}>
+              <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, mb: 1 }}>Популярные предметы ЕНТ</Typography>
+                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie 
+                        data={subjectData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={2} dataKey="value" 
+                        label={({name, percent}) => `${name} ${((percent || 0) * 100).toFixed(0)}%`} 
+                        labelLine={false}
+                      >
+                        {subjectData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+      </Box>
+    </Box>
+  );
+};
+
+export default AdminDashboard;
+
+=============================
+FILE: src/pages/public/LoginPage.tsx
+=============================
+import { useState } from 'react';
+import { Box, Card, CardContent, Typography, TextField, Button, Link, InputAdornment, IconButton, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux'; // <-- Добавили Redux
+import { loginSuccess } from '../../features/auth/authSlice'; // <-- Добавили экшен логина
+import Visibility from '@mui/icons-material/Visibility';
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import SchoolIcon from '@mui/icons-material/School';
+
+const LoginPage = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch(); // <-- Инициализируем dispatch
+  
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const[isLoading, setIsLoading] = useState(false); // Состояние загрузки
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    // Имитируем запрос на бэкенд (задержка 1.5 секунды)
+    setTimeout(() => {
+      // Проверяем, кто логинится
+      const role = identifier.toLowerCase() === 'admin' ? 'ADMIN' : 'APPLICANT';
+      const name = role === 'ADMIN' ? 'Администратор Фонда' : 'Азамат Нурбеков';
+
+      // Отправляем данные в глобальный стейт Redux (сохраняем токен)
+      dispatch(loginSuccess({
+        user: { id: '1', name, role },
+        token: 'fake-jwt-token-12345'
+      }));
+
+      setIsLoading(false);
+      
+      // Перекидываем на нужную страницу
+      if (role === 'ADMIN') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    }, 1500);
+  };
+
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F7FA' }}>
+      
+      {/* Логотип */}
+      <Box onClick={() => navigate('/')} sx={{ position: 'absolute', top: 24, left: 32, display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}>
+        <SchoolIcon sx={{ color: '#1A2B56', fontSize: 32 }} />
+        <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700 }}>Zharqyn Bolashaq</Typography>
+      </Box>
+
+      <Card sx={{ width: '100%', maxWidth: 440, borderRadius: 3, boxShadow: '0px 8px 24px rgba(0,0,0,0.05)' }}>
+        <CardContent sx={{ p: 5 }}>
+          <Typography variant="h5" sx={{ textAlign: 'center', color: '#1A2B56', fontWeight: 700, mb: 4 }}>
+            Вход в кабинет
+          </Typography>
+
+          <form onSubmit={handleLogin}>
+            <Typography variant="body2" sx={{ mb: 1, color: '#4A5568', fontWeight: 600 }}>ИИН или Email (введи "admin" для админки)</Typography>
+            <TextField
+              fullWidth variant="outlined" placeholder="Введите ИИН или Email"
+              value={identifier} onChange={(e) => setIdentifier(e.target.value)}
+              sx={{ mb: 3 }} required
+            />
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+              <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Пароль</Typography>
+              <Link href="#" underline="hover" sx={{ fontSize: '0.875rem', color: '#1A2B56', fontWeight: 600 }}>Забыли пароль?</Link>
+            </Box>
+            <TextField
+              fullWidth variant="outlined" type={showPassword ? 'text' : 'password'} placeholder="Введите пароль"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              sx={{ mb: 4 }} required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            <Button
+              type="submit" fullWidth variant="contained" disabled={isLoading}
+              sx={{ backgroundColor: '#00C853', py: 1.5, borderRadius: 2, fontSize: '1rem', textTransform: 'none', fontWeight: 600, '&:hover': { backgroundColor: '#00A844' } }}
+            >
+              {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Войти'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+};
+
+export default LoginPage;
+
+=============================
+FILE: src/pages/public/RegisterPage.tsx
+=============================
+import React, { useState } from 'react';
+import { Box, Card, CardContent, Typography, TextField, Button, Link } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import SchoolIcon from '@mui/icons-material/School';
+
+const RegisterPage = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ iin: '', email: '', password: '' });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('Registration logic here', formData);
+  };
+
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F5F7FA', py: 4 }}>
+      
+      {/* Логотип */}
+      <Box 
+        onClick={() => navigate('/')} 
+        sx={{ position: 'absolute', top: 24, left: 32, display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer' }}
+      >
+        <SchoolIcon sx={{ color: '#1A2B56', fontSize: 32 }} />
+        <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700 }}>Zharqyn Bolashaq</Typography>
+      </Box>
+
+      <Card sx={{ width: '100%', maxWidth: 440, borderRadius: 3, boxShadow: '0px 8px 24px rgba(0,0,0,0.05)' }}>
+        <CardContent sx={{ p: 5 }}>
+          <Typography variant="h5" sx={{ textAlign: 'center', color: '#1A2B56', fontWeight: 700, mb: 4 }}>
+            Регистрация<br/>абитуриента
+          </Typography>
+
+          <form onSubmit={handleRegister}>
+            <Typography variant="body2" sx={{ mb: 1, color: '#4A5568', fontWeight: 600 }}>ИИН</Typography>
+            <TextField
+              fullWidth variant="outlined" placeholder="Введите ваш ИИН" name="iin"
+              value={formData.iin} onChange={handleChange} sx={{ mb: 3 }} required
+            />
+
+            <Typography variant="body2" sx={{ mb: 1, color: '#4A5568', fontWeight: 600 }}>Email</Typography>
+            <TextField
+              fullWidth variant="outlined" type="email" placeholder="example@mail.com" name="email"
+              value={formData.email} onChange={handleChange} sx={{ mb: 3 }} required
+            />
+
+            <Typography variant="body2" sx={{ mb: 1, color: '#4A5568', fontWeight: 600 }}>Пароль</Typography>
+            <TextField
+              fullWidth variant="outlined" type="password" placeholder="Придумайте пароль" name="password"
+              value={formData.password} onChange={handleChange} sx={{ mb: 4 }} required
+            />
+
+            <Button
+              type="submit" fullWidth variant="contained"
+              sx={{ backgroundColor: '#00C853', py: 1.5, borderRadius: 2, fontSize: '1rem', textTransform: 'none', fontWeight: 600, '&:hover': { backgroundColor: '#00A844' } }}
+            >
+              Зарегистрироваться
+            </Button>
+          </form>
+
+          <Typography variant="body2" sx={{ textAlign: 'center', mt: 4, color: '#4A5568' }}>
+            Уже есть аккаунт?{' '}
+            <Link component="button" onClick={() => navigate('/login')} underline="hover" sx={{ color: '#1A2B56', fontWeight: 700, fontSize: '1rem' }}>
+              Войти
+            </Link>
+          </Typography>
+        </CardContent>
+      </Card>
+    </Box>
+  );
+};
+
+export default RegisterPage;
+
+=============================
+FILE: src/pages/public/LandingPage.css
+=============================
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.landing-wrapper {
+    font-family: 'Inter', sans-serif;
+    color: #1E1E1E;
+    background-color: #fff;
+    line-height: 1.5;
+    overflow-x: hidden; 
+}
+
+.landing-wrapper * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+.landing-wrapper img {
+    max-width: 100%;
+    height: auto;
+}
+
+.landing-wrapper .container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.landing-wrapper a { text-decoration: none; color: inherit; }
+.landing-wrapper ul { list-style: none; }
+
+:root {
+    --primary-green: #00B64F;
+    --dark-blue: #003366;
+    --gray-bg: #F5F5F5;
+}
+
+/* --- Header --- */
+.landing-wrapper header {
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    position: relative;
+    z-index: 100;
+}
+
+.landing-wrapper .header-inner { display: flex; justify-content: space-between; align-items: center; }
+.landing-wrapper .logos { display: flex; gap: 20px; align-items: center; font-weight: bold; font-size: 20px; color: var(--dark-blue); }
+.landing-wrapper .logos img { height: 50px; }
+.landing-wrapper .nav-wrapper { display: flex; align-items: center; gap: 40px; }
+.landing-wrapper nav ul { display: flex; gap: 30px; font-size: 14px; font-weight: 500; }
+.landing-wrapper .header-actions { display: flex; align-items: center; gap: 20px; font-size: 14px; }
+.landing-wrapper .btn-login { background-color: var(--primary-green); color: white; padding: 10px 24px; border-radius: 20px; font-weight: 600; white-space: nowrap; cursor: pointer; border: none; font-size: 14px; }
+
+/* Бургер меню */
+.landing-wrapper .burger-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+.landing-wrapper .burger-menu span { width: 25px; height: 3px; background-color: var(--dark-blue); border-radius: 2px; }
+
+/* --- Hero Section --- */
+.landing-wrapper .hero { padding: 80px 0; }
+.landing-wrapper .hero-inner { display: flex; align-items: center; gap: 50px; }
+.landing-wrapper .hero-text { flex: 1; }
+.landing-wrapper .subtitle { color: var(--primary-green); font-weight: 700; text-transform: uppercase; font-size: 12px; margin-bottom: 10px; display: block; }
+.landing-wrapper h1 { font-size: 42px; line-height: 1.2; margin-bottom: 20px; color: #003366; }
+.landing-wrapper .hero-desc { color: #666; margin-bottom: 30px; max-width: 450px; }
+.landing-wrapper .hero-buttons { display: flex; align-items: center; gap: 20px; }
+.landing-wrapper .btn-main { background-color: var(--primary-green); color: white; padding: 15px 30px; border-radius: 8px; font-weight: 600; display: inline-block; }
+.landing-wrapper .link-how { color: #333; font-weight: 500; }
+.landing-wrapper .hero-img { flex: 1; }
+.landing-wrapper .hero-img img { width: 100%; border-radius: 20px; }
+
+/* --- Stats --- */
+.landing-wrapper .stats { padding: 60px 0; text-align: center; }
+.landing-wrapper .stats-inner { display: flex; justify-content: space-around; }
+.landing-wrapper .stat-item h3 { font-size: 40px; color: var(--primary-green); margin-bottom: 10px; }
+.landing-wrapper .stat-item p { color: #555; font-weight: 600; }
+
+/* --- Check Status --- */
+.landing-wrapper .check-status { background-color: #F8F9FA; padding: 60px 0; text-align: center; }
+.landing-wrapper .check-box { max-width: 600px; margin: 0 auto; }
+.landing-wrapper .check-box h3 { margin-bottom: 20px; }
+.landing-wrapper .input-group { display: flex; gap: 10px; }
+.landing-wrapper .input-group input { flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #eee; outline: none; }
+.landing-wrapper .btn-check { background-color: var(--primary-green); color: white; border: none; padding: 0 30px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+
+/* --- Partners --- */
+.landing-wrapper .partners { padding: 80px 0; }
+.landing-wrapper .section-title { text-align: center; font-size: 32px; margin-bottom: 10px; color: #000; }
+.landing-wrapper .section-desc { text-align: center; color: #777; margin-bottom: 50px; font-size: 14px; }
+.landing-wrapper .partners-content { display: flex; align-items: flex-start; gap: 50px; }
+.landing-wrapper .partners-map { flex: 1.5; }
+.landing-wrapper .partners-list { flex: 1; display: flex; flex-direction: column; gap: 15px; width: 100%; }
+.landing-wrapper .partner-card { background: #EAEAEA; padding: 15px; display: flex; align-items: center; gap: 15px; border-radius: 4px; }
+.landing-wrapper .partner-logo { width: 50px; height: 50px; background: #003366; border-radius: 4px; flex-shrink: 0; }
+.landing-wrapper .partner-info h4 { font-size: 14px; margin-bottom: 5px; }
+.landing-wrapper .partner-info p { font-size: 12px; color: #666; }
+
+/* --- News --- */
+.landing-wrapper .news { padding: 60px 0 100px 0; }
+.landing-wrapper .news-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+.landing-wrapper .link-all { color: var(--primary-green); font-weight: 600; white-space: nowrap; }
+.landing-wrapper .news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.landing-wrapper .news-card img { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 15px; background-color: #eee; }
+.landing-wrapper .news-date { font-size: 12px; font-weight: 700; margin-bottom: 10px; display: block; }
+.landing-wrapper .news-text { font-size: 14px; line-height: 1.4; color: #333; margin-bottom: 15px; }
+.landing-wrapper .news-read { color: var(--primary-green); font-size: 13px; font-weight: 600; }
+
+/* --- Footer --- */
+.landing-wrapper footer { background-color: var(--dark-blue); color: white; padding: 60px 0 20px 0; }
+.landing-wrapper .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 60px; }
+.landing-wrapper .footer-col h5 { font-size: 20px; margin-bottom: 20px; }
+.landing-wrapper .footer-col p { font-size: 14px; opacity: 0.8; line-height: 1.6; max-width: 300px; }
+.landing-wrapper .footer-links li { margin-bottom: 12px; }
+.landing-wrapper .footer-links a { font-size: 14px; opacity: 0.8; border-bottom: 1px solid transparent; }
+.landing-wrapper .copyright { text-align: center; font-size: 12px; opacity: 0.5; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; }
+
+/* ========================================= */
+/*       АДАПТИВНОСТЬ (MEDIA QUERIES)        */
+/* ========================================= */
+@media (max-width: 992px) {
+    .landing-wrapper h1 { font-size: 32px; }
+    .landing-wrapper .hero-inner { gap: 30px; }
+    .landing-wrapper .news-grid { grid-template-columns: repeat(2, 1fr); }
+    .landing-wrapper .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 768px) {
+    .landing-wrapper .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .landing-wrapper .burger-menu { display: flex; }
+    .landing-wrapper .header-inner { flex-direction: column; align-items: flex-start; }
+    
+    .landing-wrapper .nav-wrapper { display: none; flex-direction: column; width: 100%; margin-top: 20px; background: #fff; gap: 20px; }
+    .landing-wrapper .nav-wrapper.active { display: flex; }
+    
+    .landing-wrapper nav ul { flex-direction: column; text-align: center; gap: 20px; }
+    .landing-wrapper .header-actions { flex-direction: column; gap: 15px; }
+    .landing-wrapper .hero { padding: 40px 0; }
+    .landing-wrapper .hero-inner { flex-direction: column; }
+    .landing-wrapper .hero-text { text-align: center; order: 2; }
+    .landing-wrapper .hero-img { order: 1; margin-bottom: 20px; }
+    .landing-wrapper .hero-buttons { justify-content: center; flex-direction: column; width: 100%; }
+    .landing-wrapper .btn-main { margin-right: 0; width: 100%; text-align: center; }
+    .landing-wrapper .stats-inner { flex-direction: column; gap: 30px; }
+    .landing-wrapper .input-group { flex-direction: column; }
+    .landing-wrapper .btn-check { padding: 15px; width: 100%; }
+    .landing-wrapper .partners-content { flex-direction: column; }
+    .landing-wrapper .partners-map { width: 100%; }
+    .landing-wrapper .news-grid { grid-template-columns: 1fr; }
+    .landing-wrapper .footer-grid { grid-template-columns: 1fr; text-align: center; gap: 30px; }
+    .landing-wrapper .footer-col p { margin: 0 auto; }
+}
+
+=============================
+FILE: src/pages/public/LandingPage.tsx
+=============================
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import './LandingPage.css'; // Подключаем твой CSS
+
+const LandingPage = () => {
+  const navigate = useNavigate();
+  
+  // Состояния для JS логики
+  const[isMenuOpen, setIsMenuOpen] = useState(false);
+  const [iin, setIin] = useState('');
+
+  // Логика бургер-меню
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Логика проверки ИИН
+  const handleCheckIin = () => {
+    const iinValue = iin.trim();
+    if (!iinValue) {
+      alert('Пожалуйста, введите ИИН');
+      return;
+    }
+    if (iinValue.length !== 12 || isNaN(Number(iinValue))) {
+      alert('Ошибка: ИИН должен состоять из 12 цифр.');
+    } else {
+      alert(`Вы ввели ИИН: ${iinValue}\n(Статус: Заявка в обработке...)`);
+    }
+  };
+
+  return (
+    <div className="landing-wrapper">
+      {/* Шапка */}
+      <header>
+        <div className="container header-inner">
+          <div className="header-top">
+            <div className="logos">
+              <span>Zharqyn Bolashaq</span>
+            </div>
+            {/* Кнопка меню для мобильных */}
+            <div className="burger-menu" onClick={toggleMenu}>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
+          {/* Навигация */}
+          <div className={`nav-wrapper ${isMenuOpen ? 'active' : ''}`}>
+            <nav>
+              <ul>
+                <li><a href="#">Главная</a></li>
+                <li><a href="#">О программе</a></li>
+                <li><a href="#">Учебные заведения</a></li>
+                <li><a href="#">Новости</a></li>
+                <li><a href="#">Вопросы и ответы</a></li>
+              </ul>
+            </nav>
+            <div className="header-actions">
+              <span>KZ | <b>RU</b> | ENG</span>
+              <button className="btn-login" onClick={() => navigate('/login')}>
+                Войти
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Главный экран */}
+      <section className="hero">
+        <div className="container hero-inner">
+          <div className="hero-text">
+            <span className="subtitle">ОБРАЗОВАТЕЛЬНАЯ ПРОГРАММА</span>
+            <h1>Гранты «Жарқын Болашақ» для молодежи Мангистау</h1>
+            <p className="hero-desc">
+              Получите бесплатное образование в лучших колледжах и ВУЗах страны с гарантированным трудоустройством
+            </p>
+            <div className="hero-buttons">
+              <a href="#" className="btn-main">Подать заявку</a>
+              <a href="#" className="link-how">Как это работает?</a>
+            </div>
+          </div>
+          <div className="hero-img">
+            <img 
+              src="https://via.placeholder.com/600x400?text=Студенты" 
+              alt="Students" 
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* Статистика */}
+      <section className="stats">
+        <div className="container stats-inner">
+          <div className="stat-item">
+            <h3>1100+</h3>
+            <p>Грантов выделено</p>
+          </div>
+          <div className="stat-item">
+            <h3>50+</h3>
+            <p>ВУЗов партнеров</p>
+          </div>
+          <div className="stat-item">
+            <h3>100%</h3>
+            <p>Трудоустройство</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Проверка статуса */}
+      <section className="check-status">
+        <div className="container check-box">
+          <h3>Проверьте статус вашей заявки</h3>
+          <div className="input-group">
+            <input 
+              type="text" 
+              placeholder="Введите ИИН" 
+              value={iin}
+              onChange={(e) => setIin(e.target.value)}
+            />
+            <button className="btn-check" onClick={handleCheckIin}>
+              Проверить
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Партнеры */}
+      <section className="partners">
+        <div className="container">
+          <h2 className="section-title">Учебные заведения-партнеры</h2>
+          <p className="section-desc">Более 50 колледжей и университетов по всему Казахстану</p>
+          
+          <div className="partners-content">
+            <div className="partners-map">
+              <img 
+                src="https://via.placeholder.com/600x400?text=Карта+Казахстана" 
+                alt="Map" 
+              />
+            </div>
+            <div className="partners-list">
+              <div className="partner-card">
+                <div className="partner-logo"></div>
+                <div className="partner-info">
+                  <h4>Yessenov University</h4>
+                  <p>г. Актау, 150 грантов.</p>
+                </div>
+              </div>
+              <div className="partner-card">
+                <div className="partner-logo"></div>
+                <div className="partner-info">
+                  <h4>Atyrau University</h4>
+                  <p>г. Атырау, 100 грантов.</p>
+                </div>
+              </div>
+              <div className="partner-card">
+                <div className="partner-logo"></div>
+                <div className="partner-info">
+                  <h4>Satbayev University</h4>
+                  <p>г. Алматы, 150 грантов.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Новости */}
+      <section className="news">
+        <div className="container">
+          <div className="news-header">
+            <h2 className="section-title" style={{ textAlign: 'left', margin: 0 }}>Последние новости</h2>
+            <a href="#" className="link-all">Все новости →</a>
+          </div>
+          
+          <div className="news-grid">
+            <div className="news-card">
+              <img src="https://via.placeholder.com/350x200" alt="News" />
+              <span className="news-date">12.12.2023</span>
+              <p className="news-text">Старт приема заявок на новый учебный год...</p>
+              <a href="#" className="news-read">Читать далее</a>
+            </div>
+            <div className="news-card">
+              <img src="https://via.placeholder.com/350x200" alt="News" />
+              <span className="news-date">15.12.2023</span>
+              <p className="news-text">Встреча со студентами в Актау прошла успешно...</p>
+              <a href="#" className="news-read">Читать далее</a>
+            </div>
+            <div className="news-card">
+              <img src="https://via.placeholder.com/350x200" alt="News" />
+              <span className="news-date">20.12.2023</span>
+              <p className="news-text">Новые условия для получения грантов...</p>
+              <a href="#" className="news-read">Читать далее</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer>
+        <div className="container">
+          <div className="footer-grid">
+            <div className="footer-col">
+              <h5>Zharqyn Bolashaq</h5>
+              <p>Национальная платформа управления образовательными грантами</p>
+            </div>
+            <div className="footer-col">
+              <ul className="footer-links">
+                <li><a href="#">Быстрые ссылки</a></li>
+                <li><a href="#">О программе</a></li>
+                <li><a href="#">Гранты</a></li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <ul className="footer-links">
+                <li><a href="#">Поддержка</a></li>
+                <li><a href="#">Центр помощи</a></li>
+                <li><a href="#">Политика конфиденциальности</a></li>
+              </ul>
+            </div>
+            <div className="footer-col">
+              <ul className="footer-links">
+                <li>Контакты</li>
+                <li>info@zharqyn.kz</li>
+                <li>+7 (7172) 123-456</li>
+              </ul>
+            </div>
+          </div>
+          <div className="copyright">
+            © 2026 Zharqyn Bolashaq. Все права защищены.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+};
+
+export default LandingPage;
+
+=============================
+FILE: src/pages/applicant/ApplyWizardPage.tsx
+=============================
+import { useState } from 'react';
+import { Box, Typography, Card, CardContent, Stepper, Step, StepLabel, Button, FormControl, Select, MenuItem, Divider } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
+const steps =['Личные данные', 'Образование', 'Выбор гранта', 'Документы'];
+
+const ApplyWizardPage = () => {
+  const navigate = useNavigate();
+  const [region, setRegion] = useState('');
+  const[university, setUniversity] = useState('');
+  const [program, setProgram] = useState('');
+
+  return (
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#F5F7FA', py: 6, px: 2, display: 'flex', justifyContent: 'center' }}>
+      <Box sx={{ width: '100%', maxWidth: 800 }}>
+        
+        {/* Горизонтальный Stepper */}
+        <Box sx={{ mb: 6 }}>
+          <Stepper activeStep={2} alternativeLabel>
+            {steps.map((label) => (
+              <Step key={label}>
+                <StepLabel StepIconProps={{ sx: { '&.Mui-active': { color: '#00C853' }, '&.Mui-completed': { color: '#00C853' } } }}>
+                  <Typography sx={{ fontWeight: 600, color: '#1A2B56' }}>{label}</Typography>
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Box>
+
+        <Card sx={{ borderRadius: 3, boxShadow: '0px 8px 24px rgba(0,0,0,0.05)' }}>
+          <CardContent sx={{ p: 5 }}>
+            <Typography variant="h5" sx={{ color: '#1A2B56', fontWeight: 800, mb: 1 }}>
+              Шаг 3: Выберите специальность и ВУЗ
+            </Typography>
+            <Typography sx={{ color: '#4A5568', mb: 4 }}>
+              Вы можете выбрать до 4 направлений в порядке приоритета
+            </Typography>
+
+            {/* Поля формы */}
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#4A5568', mb: 1 }}>Регион обучения</Typography>
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <Select value={region} onChange={(e) => setRegion(e.target.value as string)} displayEmpty>
+                <MenuItem value="" disabled>Выберите регион</MenuItem>
+                <MenuItem value="aktau">Актау</MenuItem>
+                <MenuItem value="astana">Астана</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#4A5568', mb: 1 }}>Университет</Typography>
+            <FormControl fullWidth sx={{ mb: 3 }}>
+              <Select value={university} onChange={(e) => setUniversity(e.target.value as string)} displayEmpty>
+                <MenuItem value="" disabled>Выберите университет</MenuItem>
+                <MenuItem value="yessenov">Каспийский университет (Yessenov)</MenuItem>
+                <MenuItem value="nu">Назарбаев Университет</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Typography variant="body2" sx={{ fontWeight: 600, color: '#4A5568', mb: 1 }}>Образовательная программа</Typography>
+            <FormControl fullWidth sx={{ mb: 4 }}>
+              <Select value={program} onChange={(e) => setProgram(e.target.value as string)} displayEmpty>
+                <MenuItem value="" disabled>Выберите программу</MenuItem>
+                <MenuItem value="it">Программная инженерия (B057)</MenuItem>
+                <MenuItem value="oil">Нефтегазовое дело</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Button variant="outlined" fullWidth sx={{ color: '#00C853', borderColor: '#00C853', py: 1.5, mb: 6, '&:hover': { borderColor: '#00A844', backgroundColor: 'rgba(0,200,83,0.05)' } }}>
+              + Добавить еще один ВУЗ
+            </Button>
+
+            <Divider sx={{ mb: 4 }} />
+
+            {/* Кнопки Назад / Дальше */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Button onClick={() => navigate(-1)} sx={{ color: '#4A5568', fontWeight: 600 }}>
+                ← Назад
+              </Button>
+              <Button variant="contained" sx={{ backgroundColor: '#00C853', px: 4, py: 1.5, '&:hover': { backgroundColor: '#00A844' } }}>
+                Сохранить и продолжить
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
+    </Box>
+  );
+};
+
+export default ApplyWizardPage;
+
+=============================
+FILE: src/pages/applicant/DashboardPage.tsx
+=============================
+import { Box, Typography, Card, CardContent, Grid, Button, Stepper, Step, StepLabel, Chip, Divider } from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import SettingsIcon from '@mui/icons-material/Settings';
+import EventIcon from '@mui/icons-material/Event';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+
+const steps =['Данные заполнены', 'ЕНТ подтверждено', 'На рассмотрении комиссии', 'Решение'];
+
+const DashboardPage = () => {
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F5F7FA' }}>
+      
+      {/* СИНИЙ САЙДБАР */}
+      <Box sx={{ width: 260, backgroundColor: '#1A2B56', color: '#fff', p: 3, display: 'flex', flexDirection: 'column' }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, mb: 6 }}>Грант Портал</Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <Button startIcon={<DashboardIcon />} sx={{ justifyContent: 'flex-start', color: '#00C853', backgroundColor: 'rgba(0,200,83,0.1)', '&:hover': { backgroundColor: 'rgba(0,200,83,0.2)' } }}>Главная</Button>
+          <Button startIcon={<AssignmentIcon />} sx={{ justifyContent: 'flex-start', color: '#A0AEC0' }}>Мои заявки</Button>
+          <Button startIcon={<MenuBookIcon />} sx={{ justifyContent: 'flex-start', color: '#A0AEC0' }}>Каталог грантов</Button>
+          <Button startIcon={<SettingsIcon />} sx={{ justifyContent: 'flex-start', color: '#A0AEC0' }}>Настройки</Button>
+        </Box>
+      </Box>
+
+      {/* ОСНОВНОЙ КОНТЕНТ */}
+      <Box sx={{ flexGrow: 1, p: 4 }}>
+        {/* Шапка (Приветствие) */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+          <Box>
+            <Typography variant="h5" sx={{ color: '#1A2B56', fontWeight: 700 }}>Здравствуйте, Азамат!</Typography>
+            <Chip label="Ваша заявка в обработке" color="warning" size="small" sx={{ mt: 1, fontWeight: 600 }} />
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography sx={{ color: '#1A2B56', fontWeight: 600 }}>Азамат Нурбеков</Typography>
+            <Box sx={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#00C853', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>АН</Box>
+          </Box>
+        </Box>
+
+        {/* ТРЕКЕР СТАТУСА (Stepper) */}
+        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: '0px 4px 20px rgba(0,0,0,0.05)' }}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, mb: 4 }}>Статус вашей заявки</Typography>
+            <Stepper activeStep={2} alternativeLabel>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel StepIconProps={{ sx: { '&.Mui-active': { color: '#1A2B56' }, '&.Mui-completed': { color: '#00C853' } } }}>
+                    <Typography sx={{ fontWeight: 600 }}>{label}</Typography>
+                  </StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </CardContent>
+        </Card>
+
+        {/* ВИДЖЕТЫ */}
+        <Grid container spacing={4} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ borderRadius: 3, height: '100%', boxShadow: 'none', border: '1px solid #E2E8F0' }}>
+              <CardContent sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, p: 3 }}>
+                <WorkspacePremiumIcon sx={{ color: '#00C853', fontSize: 40 }} />
+                <Box>
+                  <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Мои баллы ЕНТ</Typography>
+                  <Typography variant="h3" sx={{ color: '#1A2B56', fontWeight: 800 }}>115</Typography>
+                  <Typography variant="body2" sx={{ color: '#A0AEC0' }}>Профильные: Математика, Физика</Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card sx={{ borderRadius: 3, height: '100%', boxShadow: 'none', border: '1px solid #E2E8F0' }}>
+              <CardContent sx={{ p: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <EventIcon sx={{ color: '#4A5568' }} />
+                  <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Дедлайны</Typography>
+                </Box>
+                <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, mb: 2 }}>
+                  Осталось 5 дней до окончания приема документов
+                </Typography>
+                <Button fullWidth variant="contained" sx={{ backgroundColor: '#00C853', '&:hover': { backgroundColor: '#00A844' } }}>
+                  Загрузить документ
+                </Button>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Box>
+    </Box>
+  );
+};
+
+export default DashboardPage;
+
+=============================
+FILE: src/pages/applicant/GrantsCatalogPage.tsx
+=============================
+import { Box, Typography, Grid, Card, CardContent, TextField, Button, Checkbox, FormControlLabel, Radio, RadioGroup, Slider, InputAdornment } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import SchoolIcon from '@mui/icons-material/School';
+
+// Заглушка (Моки) для карточек ВУЗов
+const MOCK_UNIVERSITIES =[
+  { id: 1, name: 'Каспийский университет технологий', program: 'Программная инженерия', grants: 150, score: 85 },
+  { id: 2, name: 'Назарбаев Университет', program: 'Компьютерные науки', grants: 200, score: 120 },
+  { id: 3, name: 'Евразийский национальный университет', program: 'Международные отношения', grants: 120, score: 100 },
+];
+
+const GrantsCatalogPage = () => {
+  return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+      
+      {/* ЛЕВАЯ ПАНЕЛЬ ФИЛЬТРОВ */}
+      <Box sx={{ width: 280, backgroundColor: '#fff', borderRight: '1px solid #E2E8F0', p: 4, display: { xs: 'none', md: 'block' } }}>
+        <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 800, mb: 4 }}>Фильтры</Typography>
+        
+        <Typography sx={{ fontWeight: 700, color: '#4A5568', mb: 2 }}>Регион</Typography>
+        <FormControlLabel control={<Checkbox sx={{ color: '#00C853', '&.Mui-checked': { color: '#00C853' } }} />} label="Актау" />
+        <FormControlLabel control={<Checkbox sx={{ color: '#00C853', '&.Mui-checked': { color: '#00C853' } }} />} label="Астана" />
+        <FormControlLabel control={<Checkbox sx={{ color: '#00C853', '&.Mui-checked': { color: '#00C853' } }} />} label="Алматы" />
+
+        <Typography sx={{ fontWeight: 700, color: '#4A5568', mt: 4, mb: 2 }}>Предметы ЕНТ</Typography>
+        <RadioGroup defaultValue="all">
+          <FormControlLabel value="all" control={<Radio sx={{ '&.Mui-checked': { color: '#00C853' } }}/>} label="Все предметы" />
+          <FormControlLabel value="fizmat" control={<Radio sx={{ '&.Mui-checked': { color: '#00C853' } }}/>} label="Физ-Мат" />
+          <FormControlLabel value="biohim" control={<Radio sx={{ '&.Mui-checked': { color: '#00C853' } }}/>} label="Био-Хим" />
+        </RadioGroup>
+
+        <Typography sx={{ fontWeight: 700, color: '#4A5568', mt: 4, mb: 4 }}>Проходной балл</Typography>
+        <Slider defaultValue={50} min={50} max={140} valueLabelDisplay="on" sx={{ color: '#00C853' }} />
+      </Box>
+
+      {/* ПРАВАЯ ЧАСТЬ (Сетка карточек) */}
+      <Box sx={{ flexGrow: 1, p: { xs: 2, md: 5 } }}>
+        <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800, mb: 4 }}>Каталог грантов и ВУЗов</Typography>
+        
+        {/* Поиск */}
+        <TextField 
+          fullWidth variant="outlined" placeholder="Найти специальность или ВУЗ..."
+          sx={{ mb: 4, backgroundColor: '#fff', borderRadius: 2 }}
+          InputProps={{
+            startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#A0AEC0' }} /></InputAdornment>,
+          }}
+        />
+
+        <Typography sx={{ color: '#4A5568', mb: 3 }}>Найдено: {MOCK_UNIVERSITIES.length} университетов</Typography>
+
+        {/* СЕТКА (Grid) */}
+        <Grid container spacing={3}>
+          {MOCK_UNIVERSITIES.map((uni) => (
+            <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={uni.id}>
+              <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: 'none', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <CardContent sx={{ p: 3, flexGrow: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Box sx={{ width: 48, height: 48, backgroundColor: '#F5F7FA', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <SchoolIcon sx={{ color: '#1A2B56' }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, lineHeight: 1.2 }}>{uni.name}</Typography>
+                  </Box>
+                  <Typography sx={{ color: '#4A5568', mb: 2 }}>{uni.program}</Typography>
+                  
+                  <Box sx={{ backgroundColor: '#00C853', color: '#fff', display: 'inline-block', px: 1.5, py: 0.5, borderRadius: 1, fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>
+                    Выделено грантов: {uni.grants}
+                  </Box>
+                  <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Проходной балл: {uni.score}</Typography>
+                </CardContent>
+                
+                <Box sx={{ p: 3, pt: 0 }}>
+                  <Button fullWidth variant="contained" sx={{ backgroundColor: '#00C853', textTransform: 'none', fontWeight: 600, '&:hover': { backgroundColor: '#00A844' } }}>
+                    Подробнее
+                  </Button>
+                </Box>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Box>
+    </Box>
+  );
+};
+
+export default GrantsCatalogPage;
+
+=============================
+FILE: src/main.tsx
+=============================
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import { Provider } from 'react-redux'
+import { store } from './store'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </React.StrictMode>,
+)
+
+=============================
+FILE: src/components/layout/MainLayout.tsx
+=============================
+
+
+=============================
+FILE: src/components/layout/AuthLayout.tsx
+=============================
+
+
+=============================
+FILE: src/App.tsx
+=============================
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LandingPage from './pages/public/LandingPage';
+import LoginPage from './pages/public/LoginPage';
+import RegisterPage from './pages/public/RegisterPage';
+
+import DashboardPage from './pages/applicant/DashboardPage';
+import ApplyWizardPage from './pages/applicant/ApplyWizardPage';
+import GrantsCatalogPage from './pages/applicant/GrantsCatalogPage';
+
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ApplicationsList from './pages/admin/ApplicationsList';
+
+// Импортируем наш защитник
+import ProtectedRoute from './routes/ProtectedRoute';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* Публичные страницы */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        
+        {/* Кабинет абитуриента (только для APPLICANT) */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute allowedRoles={['APPLICANT']}>
+            <DashboardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/apply" element={
+          <ProtectedRoute allowedRoles={['APPLICANT']}>
+            <ApplyWizardPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/catalog" element={
+          <ProtectedRoute allowedRoles={['APPLICANT']}>
+            <GrantsCatalogPage />
+          </ProtectedRoute>
+        } />
+
+        {/* Панель администратора (только для ADMIN) */}
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/applications" element={
+          <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ApplicationsList />
+          </ProtectedRoute>
+        } />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+export default App;
+
+=============================
+FILE: src/features/catalog/UniversityCard.tsx
+=============================
+
+
+=============================
+FILE: src/features/catalog/GrantFilters.tsx
+=============================
+
+
+=============================
+FILE: src/features/application/wizard/Step2Education.tsx
+=============================
+
+
+=============================
+FILE: src/features/application/wizard/Step3Grants.tsx
+=============================
+
+
+=============================
+FILE: src/features/application/wizard/Step1Personal.tsx
+=============================
+
+
+=============================
+FILE: src/features/application/ApplicationStatusTracker.tsx
+=============================
+
+
+=============================
+FILE: src/features/auth/LoginForm.tsx
+=============================
+
+
+=============================
+FILE: src/features/auth/authSlice.ts
+=============================
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+
+// Тип нашего юзера
+interface User {
+  id: string;
+  name: string;
+  role: 'APPLICANT' | 'ADMIN';
+}
+
+interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+}
+
+const initialState: AuthState = {
+  // При запуске проверяем, есть ли уже токен в браузере (чтобы не выкидывало при F5)
+  isAuthenticated: !!localStorage.getItem('token'),
+  user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null,
+};
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    // Действие при успешном логине
+    loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
+      state.isAuthenticated = true;
+      state.user = action.payload.user;
+      // Сохраняем в память браузера
+      localStorage.setItem('token', action.payload.token);
+      localStorage.setItem('user', JSON.stringify(action.payload.user));
+    },
+    // Действие при выходе
+    logout: (state) => {
+      state.isAuthenticated = false;
+      state.user = null;
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    },
+  },
+});
+
+export const { loginSuccess, logout } = authSlice.actions;
+export default authSlice.reducer;
+
+=============================
+FILE: src/styles/theme.ts
+=============================
+
+
+=============================
+FILE: src/types/api.types.ts
+=============================
+
+
+=============================
+FILE: src/types/user.types.ts
+=============================
+
+
+=============================
+FILE: src/api/apiClient.ts
+=============================

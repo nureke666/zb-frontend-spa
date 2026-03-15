@@ -1,14 +1,22 @@
-import { Box, Typography, Card, CardContent, Grid, Button, Stepper, Step, StepLabel, Chip, Divider } from '@mui/material';
+import { Box, Typography, Card, CardContent, Grid, Button, Stepper, Step, StepLabel, Chip } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import SettingsIcon from '@mui/icons-material/Settings';
 import EventIcon from '@mui/icons-material/Event';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store';
 
 const steps =['Данные заполнены', 'ЕНТ подтверждено', 'На рассмотрении комиссии', 'Решение'];
 
 const DashboardPage = () => {
+  // Достаем данные нашего юзера из Redux
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  // Генерируем инициалы для аватарки (например, "АН" для Азамат Нурбеков)
+  const initials = user ? `${user.firstName[0]}${user.lastName[0]}`.toUpperCase() : 'С';
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F5F7FA' }}>
       
@@ -25,15 +33,22 @@ const DashboardPage = () => {
 
       {/* ОСНОВНОЙ КОНТЕНТ */}
       <Box sx={{ flexGrow: 1, p: 4 }}>
-        {/* Шапка (Приветствие) */}
+        
+        {/* ДИНАМИЧЕСКАЯ ШАПКА ИЗ REDUX */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Box>
-            <Typography variant="h5" sx={{ color: '#1A2B56', fontWeight: 700 }}>Здравствуйте, Азамат!</Typography>
+            <Typography variant="h5" sx={{ color: '#1A2B56', fontWeight: 700 }}>
+              Здравствуйте, {user?.firstName}!
+            </Typography>
             <Chip label="Ваша заявка в обработке" color="warning" size="small" sx={{ mt: 1, fontWeight: 600 }} />
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Typography sx={{ color: '#1A2B56', fontWeight: 600 }}>Азамат Нурбеков</Typography>
-            <Box sx={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#00C853', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>АН</Box>
+            <Typography sx={{ color: '#1A2B56', fontWeight: 600 }}>
+              {user?.lastName} {user?.firstName}
+            </Typography>
+            <Box sx={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#00C853', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+              {initials}
+            </Box>
           </Box>
         </Box>
 

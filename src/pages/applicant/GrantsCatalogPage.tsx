@@ -1,12 +1,44 @@
-import { Box, Typography, Grid, Card, CardContent, TextField, Button, Checkbox, FormControlLabel, Radio, RadioGroup, Slider, InputAdornment } from '@mui/material';
+import { Box, Typography, Grid, Card, CardContent, TextField, Button, Checkbox, FormControlLabel, Radio, RadioGroup, Slider, InputAdornment, Chip, Divider } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import SchoolIcon from '@mui/icons-material/School';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
-// Заглушка (Моки) для карточек ВУЗов
+// РАСШИРЕННЫЕ ДАННЫЕ ДЛЯ ДАУЛЕТА
 const MOCK_UNIVERSITIES =[
-  { id: 1, name: 'Каспийский университет технологий', program: 'Программная инженерия', grants: 150, score: 85 },
-  { id: 2, name: 'Назарбаев Университет', program: 'Компьютерные науки', grants: 200, score: 120 },
-  { id: 3, name: 'Евразийский национальный университет', program: 'Международные отношения', grants: 120, score: 100 },
+  { 
+    id: 1, 
+    name: 'Каспийский университет технологий и инжиниринга', 
+    city: 'Актау',
+    program: 'B057 - Информационные технологии', 
+    degree: 'Бакалавриат',
+    duration: '4 года',
+    language: 'KZ, RU',
+    grants: 150, 
+    score: 85 
+  },
+  { 
+    id: 2, 
+    name: 'Назарбаев Университет', 
+    city: 'Астана',
+    program: 'B059 - Компьютерные науки', 
+    degree: 'Бакалавриат',
+    duration: '4 года',
+    language: 'EN',
+    grants: 200, 
+    score: 120 
+  },
+  { 
+    id: 3, 
+    name: 'Евразийский национальный университет', 
+    city: 'Астана',
+    program: 'B044 - Менеджмент и управление', 
+    degree: 'Бакалавриат',
+    duration: '4 года',
+    language: 'KZ, RU',
+    grants: 120, 
+    score: 100 
+  },
 ];
 
 const GrantsCatalogPage = () => {
@@ -37,46 +69,69 @@ const GrantsCatalogPage = () => {
       <Box sx={{ flexGrow: 1, p: { xs: 2, md: 5 } }}>
         <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800, mb: 4 }}>Каталог грантов и ВУЗов</Typography>
         
-        {/* Поиск */}
         <TextField 
           fullWidth variant="outlined" placeholder="Найти специальность или ВУЗ..."
           sx={{ mb: 4, backgroundColor: '#fff', borderRadius: 2 }}
-          InputProps={{
-            startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#A0AEC0' }} /></InputAdornment>,
-          }}
+          InputProps={{ startAdornment: <InputAdornment position="start"><SearchIcon sx={{ color: '#A0AEC0' }} /></InputAdornment> }}
         />
 
-        <Typography sx={{ color: '#4A5568', mb: 3 }}>Найдено: {MOCK_UNIVERSITIES.length} университетов</Typography>
+        <Typography sx={{ color: '#4A5568', mb: 3 }}>Найдено: {MOCK_UNIVERSITIES.length} программ</Typography>
 
-        {/* СЕТКА (Grid) */}
+        {/* РАСШИРЕННАЯ КАРТОЧКА ВУЗА */}
         <Grid container spacing={3}>
           {MOCK_UNIVERSITIES.map((uni) => (
             <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={uni.id}>
               <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0', boxShadow: 'none', height: '100%', display: 'flex', flexDirection: 'column' }}>
                 <CardContent sx={{ p: 3, flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                    <Box sx={{ width: 48, height: 48, backgroundColor: '#F5F7FA', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+                    <Box sx={{ width: 48, height: 48, backgroundColor: '#F5F7FA', borderRadius: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <SchoolIcon sx={{ color: '#1A2B56' }} />
                     </Box>
-                    <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, lineHeight: 1.2 }}>{uni.name}</Typography>
+                    <Box>
+                      <Typography variant="subtitle1" sx={{ color: '#1A2B56', fontWeight: 800, lineHeight: 1.2, mb: 0.5 }}>
+                        {uni.program}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: '#4A5568', lineHeight: 1.2 }}>
+                        {uni.name}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Typography sx={{ color: '#4A5568', mb: 2 }}>{uni.program}</Typography>
+
+                  {/* Доп информация: Город, Срок */}
+                  <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <LocationOnIcon sx={{ fontSize: 16, color: '#A0AEC0' }} />
+                      <Typography variant="caption" sx={{ color: '#718096', fontWeight: 600 }}>{uni.city}</Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <AccessTimeIcon sx={{ fontSize: 16, color: '#A0AEC0' }} />
+                      <Typography variant="caption" sx={{ color: '#718096', fontWeight: 600 }}>{uni.duration}</Typography>
+                    </Box>
+                    <Typography variant="caption" sx={{ color: '#718096', fontWeight: 600 }}>• {uni.language}</Typography>
+                  </Box>
+
+                  <Divider sx={{ my: 2 }} />
                   
-                  <Box sx={{ backgroundColor: '#00C853', color: '#fff', display: 'inline-block', px: 1.5, py: 0.5, borderRadius: 1, fontSize: '0.75rem', fontWeight: 700, mb: 1 }}>
-                    Выделено грантов: {uni.grants}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Box>
+                      <Typography variant="caption" sx={{ color: '#A0AEC0', display: 'block' }}>Проходной балл</Typography>
+                      <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 800 }}>{uni.score}</Typography>
+                    </Box>
+                    <Chip label={`${uni.grants} грантов`} sx={{ backgroundColor: 'rgba(0,200,83,0.1)', color: '#00C853', fontWeight: 700, borderRadius: 1 }} />
                   </Box>
-                  <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Проходной балл: {uni.score}</Typography>
                 </CardContent>
                 
                 <Box sx={{ p: 3, pt: 0 }}>
                   <Button fullWidth variant="contained" sx={{ backgroundColor: '#00C853', textTransform: 'none', fontWeight: 600, '&:hover': { backgroundColor: '#00A844' } }}>
-                    Подробнее
+                    Выбрать
                   </Button>
                 </Box>
               </Card>
             </Grid>
           ))}
         </Grid>
+
       </Box>
     </Box>
   );

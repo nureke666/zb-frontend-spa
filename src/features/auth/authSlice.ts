@@ -1,9 +1,11 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-// Тип нашего юзера
+// Обновленный тип юзера под требования Даулета
 interface User {
   id: string;
-  name: string;
+  firstName: string;      // Имя
+  lastName: string;       // Фамилия
+  patronymic?: string;    // Отчество (fatherName, необязательное)
   role: 'APPLICANT' | 'ADMIN';
 }
 
@@ -13,7 +15,6 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  // При запуске проверяем, есть ли уже токен в браузере (чтобы не выкидывало при F5)
   isAuthenticated: !!localStorage.getItem('token'),
   user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') as string) : null,
 };
@@ -22,15 +23,12 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // Действие при успешном логине
     loginSuccess: (state, action: PayloadAction<{ user: User; token: string }>) => {
       state.isAuthenticated = true;
       state.user = action.payload.user;
-      // Сохраняем в память браузера
       localStorage.setItem('token', action.payload.token);
       localStorage.setItem('user', JSON.stringify(action.payload.user));
     },
-    // Действие при выходе
     logout: (state) => {
       state.isAuthenticated = false;
       state.user = null;

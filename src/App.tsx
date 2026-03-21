@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './pages/public/LandingPage';
 import LoginPage from './pages/public/LoginPage';
@@ -12,8 +13,16 @@ import ApplicationsList from './pages/admin/ApplicationsList';
 
 // Импортируем наш защитник
 import ProtectedRoute from './routes/ProtectedRoute';
+import { bootstrapSession } from './features/auth/authSlice';
+import { useAppDispatch } from './store/hooks';
 
 function App() {
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    void dispatch(bootstrapSession());
+  }, [dispatch]);
+
   return (
     <BrowserRouter>
       <Routes>

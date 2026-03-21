@@ -1,46 +1,68 @@
-import { useState } from 'react';
-import { Box, Card, CardContent, Typography, TextField, Button, Link, InputAdornment, IconButton, CircularProgress } from '@mui/material';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  Box,
+  Card,
+  CardContent,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  Link,
+  TextField,
+  Typography,
+  Button,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux'; // <-- Добавили Redux
-import { loginSuccess } from '../../features/auth/authSlice'; // <-- Добавили экшен логина
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import SchoolIcon from '@mui/icons-material/School';
+import {
+  clearAuthError,
+  loginUser,
+} from '../../features/auth/authSlice';
+import { authService } from '../../features/auth/authService';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch(); // <-- Инициализируем dispatch
-  
+  const dispatch = useAppDispatch();
+  const { error, isAuthenticated, status, user } = useAppSelector(
+    (state) => state.auth,
+  );
+
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const[isLoading, setIsLoading] = useState(false); // Состояние загрузки
 
-  const handleLogin = (e: React.FormEvent) => {
+  const isLoading = status === 'loading';
+
+  useEffect(() => {
+    dispatch(clearAuthError());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate(authService.getDefaultRoute(user.role), { replace: true });
+    }
+  }, [isAuthenticated, navigate, user]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    // Имитируем запрос на бэкенд (задержка 1.5 секунды)
-    setTimeout(() => {
-      // Проверяем, кто логинится
-      const role = identifier.toLowerCase() === 'admin' ? 'ADMIN' : 'APPLICANT';
-      const name = role === 'ADMIN' ? 'Администратор Фонда' : 'Азамат Нурбеков';
+    dispatch(clearAuthError());
 
-      // Отправляем данные в глобальный стейт Redux (сохраняем токен)
-      dispatch(loginSuccess({
-        user: { id: '1', name, role },
-        token: 'fake-jwt-token-12345'
-      }));
+    try {
+      const session = await dispatch(
+        loginUser({
+          identifier: identifier.trim(),
+          password,
+        }),
+      ).unwrap();
 
-      setIsLoading(false);
-      
-      // Перекидываем на нужную страницу
-      if (role === 'ADMIN') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
-    }, 1500);
+      navigate(authService.getDefaultRoute(session.user.role), { replace: true });
+    } catch {
+      // Ошибка уже сохранена в store и показана в UI.
+    }
   };
 
   return (
@@ -59,10 +81,22 @@ const LoginPage = () => {
           </Typography>
 
           <form onSubmit={handleLogin}>
+            {error ? (
+              <Alert severity="error" sx={{ mb: 3 }}>
+                {error}
+              </Alert>
+            ) : null}
+
             <Typography variant="body2" sx={{ mb: 1, color: '#4A5568', fontWeight: 600 }}>ИИН или Email (введи "admin" для админки)</Typography>
             <TextField
               fullWidth variant="outlined" placeholder="Введите ИИН или Email"
-              value={identifier} onChange={(e) => setIdentifier(e.target.value)}
+              value={identifier}
+              onChange={(e) => {
+                setIdentifier(e.target.value);
+                if (error) {
+                  dispatch(clearAuthError());
+                }
+              }}
               sx={{ mb: 3 }} required
             />
 
@@ -72,7 +106,13 @@ const LoginPage = () => {
             </Box>
             <TextField
               fullWidth variant="outlined" type={showPassword ? 'text' : 'password'} placeholder="Введите пароль"
-              value={password} onChange={(e) => setPassword(e.target.value)}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) {
+                  dispatch(clearAuthError());
+                }
+              }}
               sx={{ mb: 4 }} required
               InputProps={{
                 endAdornment: (

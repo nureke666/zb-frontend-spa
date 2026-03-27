@@ -58,49 +58,186 @@ const DashboardPage = () => {
       : Math.min(completedSteps.length, WIZARD_STEP_LABELS.length - 1);
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F5F7FA' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #F5F7FA 0%, #E8F0F7 100%)' }}>
       
-      {/* СИНИЙ САЙДБАР */}
-      <Box sx={{ width: 260, backgroundColor: '#1A2B56', color: '#fff', p: 3, display: 'flex', flexDirection: 'column' }}>
-        <Typography variant="h6" sx={{ fontWeight: 800, mb: 6 }}>Грант Портал</Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Button startIcon={<DashboardIcon />} sx={{ justifyContent: 'flex-start', color: '#00C853', backgroundColor: 'rgba(0,200,83,0.1)', '&:hover': { backgroundColor: 'rgba(0,200,83,0.2)' } }}>Главная</Button>
-          <Button startIcon={<AssignmentIcon />} onClick={() => navigate('/apply')} sx={{ justifyContent: 'flex-start', color: '#A0AEC0' }}>Моя заявка</Button>
-          <Button startIcon={<MenuBookIcon />} onClick={() => navigate('/catalog')} sx={{ justifyContent: 'flex-start', color: '#A0AEC0' }}>Каталог грантов</Button>
-          <Button startIcon={<SettingsIcon />} sx={{ justifyContent: 'flex-start', color: '#A0AEC0' }}>Настройки</Button>
+      {/* САЙДБАР С ГРАДИЕНТОМ */}
+      <Box sx={{
+        width: 260,
+        background: `linear-gradient(180deg, #1A2B56 0%, #0F1B35 100%)`,
+        color: '#fff',
+        p: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '4px 0 20px rgba(0, 0, 0, 0.15)',
+        overflow: 'hidden',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          width: '200px',
+          height: '200px',
+          background: 'radial-gradient(circle, rgba(0, 182, 79, 0.1) 0%, transparent 70%)',
+          pointerEvents: 'none'
+        }
+      }}>
+        <Typography variant="h6" sx={{ fontWeight: 800, mb: 6, position: 'relative', zIndex: 1, fontSize: '1.2rem' }}>
+          Грант Портал
+        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, position: 'relative', zIndex: 1 }}>
+          <Button startIcon={<DashboardIcon />} sx={{
+            justifyContent: 'flex-start',
+            color: '#00B64F',
+            backgroundColor: 'rgba(0, 182, 79, 0.15)',
+            borderRadius: '12px',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              backgroundColor: 'rgba(0, 182, 79, 0.25)',
+              transform: 'translateX(8px)',
+              boxShadow: '0 4px 12px rgba(0, 182, 79, 0.3)'
+            }
+          }}>
+            Главная
+          </Button>
+          <Button startIcon={<AssignmentIcon />} onClick={() => navigate('/apply')} sx={{
+            justifyContent: 'flex-start',
+            color: '#CBD5E0',
+            transition: 'all 0.3s ease',
+            borderRadius: '12px',
+            '&:hover': {
+              color: '#F0F4F8',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              transform: 'translateX(8px)'
+            }
+          }}>
+            Моя заявка
+          </Button>
+          <Button startIcon={<MenuBookIcon />} onClick={() => navigate('/catalog')} sx={{
+            justifyContent: 'flex-start',
+            color: '#CBD5E0',
+            transition: 'all 0.3s ease',
+            borderRadius: '12px',
+            '&:hover': {
+              color: '#F0F4F8',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              transform: 'translateX(8px)'
+            }
+          }}>
+            Каталог грантов
+          </Button>
+          <Button startIcon={<SettingsIcon />} sx={{
+            justifyContent: 'flex-start',
+            color: '#CBD5E0',
+            transition: 'all 0.3s ease',
+            borderRadius: '12px',
+            '&:hover': {
+              color: '#F0F4F8',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              transform: 'translateX(8px)'
+            }
+          }}>
+            Настройки
+          </Button>
         </Box>
       </Box>
 
       {/* ОСНОВНОЙ КОНТЕНТ */}
-      <Box sx={{ flexGrow: 1, p: 4 }}>
+      <Box sx={{ flexGrow: 1, p: 4, overflow: 'auto' }}>
         
-        {/* ДИНАМИЧЕСКАЯ ШАПКА ИЗ REDUX */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        {/* ШАПКА */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 4,
+          animation: 'slideInDown 0.6s ease'
+        }}>
           <Box>
-            <Typography variant="h5" sx={{ color: '#1A2B56', fontWeight: 700 }}>
+            <Typography variant="h5" sx={{
+              color: '#1A2B56',
+              fontWeight: 700,
+              fontSize: '1.5rem'
+            }}>
               Здравствуйте, {user?.firstName}!
             </Typography>
             <Chip
               label={statusLabel}
               color={lifecycleStatus === 'SUBMITTED' ? 'success' : lifecycleStatus === 'READY_TO_SUBMIT' ? 'warning' : 'default'}
               size="small"
-              sx={{ mt: 1, fontWeight: 600 }}
+              sx={{
+                mt: 1,
+                fontWeight: 600,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
+                }
+              }}
             />
           </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.12)',
+              transform: 'translateY(-2px)'
+            }
+          }}>
             <Typography sx={{ color: '#1A2B56', fontWeight: 600 }}>
               {user?.lastName} {user?.firstName}
             </Typography>
-            <Box sx={{ width: 40, height: 40, borderRadius: '50%', backgroundColor: '#00C853', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+            <Box sx={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #00B64F 0%, #0095D9 100%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 12px rgba(0, 182, 79, 0.3)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.1)'
+              }
+            }}>
               {initials}
             </Box>
           </Box>
         </Box>
 
-        {/* ТРЕКЕР СТАТУСА (Stepper) */}
-        <Card sx={{ mb: 4, borderRadius: 3, boxShadow: '0px 4px 20px rgba(0,0,0,0.05)' }}>
+        {/* ТРЕКЕР СТАТУСА */}
+        <Card sx={{
+          mb: 4,
+          borderRadius: '16px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease',
+          animation: 'slideInUp 0.6s ease 0.1s both',
+          '&:hover': {
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
+            transform: 'translateY(-4px)'
+          }
+        }}>
           <CardContent sx={{ p: 4 }}>
-            <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, mb: 4 }}>Статус вашей заявки</Typography>
+            <Typography variant="h6" sx={{
+              color: '#1A2B56',
+              fontWeight: 700,
+              mb: 4
+            }}>
+              Статус вашей заявки
+            </Typography>
             <ApplicationStatusTracker
               labels={[...WIZARD_STEP_LABELS]}
               completedSteps={completedSteps}
@@ -110,14 +247,37 @@ const DashboardPage = () => {
         </Card>
 
         {/* ВИДЖЕТЫ */}
-        <Grid container spacing={4} sx={{ mb: 4 }}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card sx={{ borderRadius: 3, height: '100%', boxShadow: 'none', border: '1px solid #E2E8F0' }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, md: 6 }} sx={{ animation: 'slideInUp 0.6s ease 0.2s both' }}>
+            <Card sx={{
+              borderRadius: '16px',
+              height: '100%',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+              border: '1px solid rgba(0, 182, 79, 0.2)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 8px 32px rgba(0, 182, 79, 0.15)',
+                transform: 'translateY(-8px)',
+                borderColor: 'rgba(0, 182, 79, 0.4)'
+              }
+            }}>
               <CardContent sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, p: 3 }}>
-                <WorkspacePremiumIcon sx={{ color: '#00C853', fontSize: 40 }} />
+                <Box sx={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(0, 182, 79, 0.2) 0%, rgba(0, 182, 79, 0.05) 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 182, 79, 0.1)'
+                }}>
+                  <WorkspacePremiumIcon sx={{ color: '#00B64F', fontSize: 32 }} />
+                </Box>
                 <Box>
                   <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Мои баллы ЕНТ</Typography>
-                  <Typography variant="h3" sx={{ color: '#1A2B56', fontWeight: 800 }}>
+                  <Typography variant="h3" sx={{ color: '#1A2B56', fontWeight: 800, my: 0.5 }}>
                     {draft.education.entScore || '—'}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#A0AEC0' }}>
@@ -127,34 +287,88 @@ const DashboardPage = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card sx={{ borderRadius: 3, height: '100%', boxShadow: 'none', border: '1px solid #E2E8F0' }}>
+          <Grid size={{ xs: 12, md: 6 }} sx={{ animation: 'slideInUp 0.6s ease 0.3s both' }}>
+            <Card sx={{
+              borderRadius: '16px',
+              height: '100%',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+              border: '1px solid rgba(0, 100, 200, 0.2)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 8px 32px rgba(0, 100, 200, 0.15)',
+                transform: 'translateY(-8px)',
+                borderColor: 'rgba(0, 100, 200, 0.4)'
+              }
+            }}>
               <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <EventIcon sx={{ color: '#4A5568' }} />
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                  <EventIcon sx={{ color: '#0095D9', fontSize: 24 }} />
                   <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Прогресс заявки</Typography>
                 </Box>
-                <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, mb: 2 }}>
-                  {selectedDirectionsCount} из 4 направлений выбрано, {uploadedDocumentsCount} из {REQUIRED_DOCUMENTS.length} документов загружено
+                <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, mb: 2, fontSize: '0.95rem' }}>
+                  {selectedDirectionsCount} из 4 направлений, {uploadedDocumentsCount} из {REQUIRED_DOCUMENTS.length} документов
                 </Typography>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
-                  <Button fullWidth variant="contained" startIcon={<AssignmentIcon />} onClick={() => navigate('/apply')} sx={{ backgroundColor: '#00C853', '&:hover': { backgroundColor: '#00A844' } }}>
+                  <Button fullWidth variant="contained" startIcon={<AssignmentIcon />} onClick={() => navigate('/apply')} sx={{
+                    background: 'linear-gradient(135deg, #00B64F 0%, #00A844 100%)',
+                    boxShadow: '0 4px 12px rgba(0, 182, 79, 0.3)',
+                    fontWeight: 600,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      boxShadow: '0 8px 24px rgba(0, 182, 79, 0.4)',
+                      transform: 'translateY(-2px)'
+                    }
+                  }}>
                     {lifecycleStatus === 'EMPTY' ? 'Начать заявку' : 'Продолжить заявку'}
                   </Button>
-                  <Button fullWidth variant="outlined" startIcon={<MenuBookIcon />} onClick={() => navigate('/catalog')} sx={{ color: '#1A2B56', borderColor: '#CBD5E0' }}>
+                  <Button fullWidth variant="outlined" startIcon={<MenuBookIcon />} onClick={() => navigate('/catalog')} sx={{
+                    color: '#1A2B56',
+                    borderColor: '#CBD5E0',
+                    borderWidth: '2px',
+                    fontWeight: 600,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      borderColor: '#00B64F',
+                      backgroundColor: 'rgba(0, 182, 79, 0.05)'
+                    }
+                  }}>
                     Открыть каталог
                   </Button>
                 </Stack>
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card sx={{ borderRadius: 3, height: '100%', boxShadow: 'none', border: '1px solid #E2E8F0' }}>
+          <Grid size={{ xs: 12, md: 6 }} sx={{ animation: 'slideInUp 0.6s ease 0.4s both' }}>
+            <Card sx={{
+              borderRadius: '16px',
+              height: '100%',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+              border: '1px solid rgba(0, 182, 79, 0.2)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 8px 32px rgba(0, 182, 79, 0.15)',
+                transform: 'translateY(-8px)',
+                borderColor: 'rgba(0, 182, 79, 0.4)'
+              }
+            }}>
               <CardContent sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, p: 3 }}>
-                <UploadFileIcon sx={{ color: '#1A2B56', fontSize: 40 }} />
+                <Box sx={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(0, 182, 79, 0.2) 0%, rgba(0, 182, 79, 0.05) 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 182, 79, 0.1)'
+                }}>
+                  <UploadFileIcon sx={{ color: '#00B64F', fontSize: 32 }} />
+                </Box>
                 <Box>
                   <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Документы</Typography>
-                  <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800 }}>
+                  <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800, my: 0.5 }}>
                     {uploadedDocumentsCount}/{REQUIRED_DOCUMENTS.length}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#A0AEC0' }}>
@@ -164,13 +378,36 @@ const DashboardPage = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card sx={{ borderRadius: 3, height: '100%', boxShadow: 'none', border: '1px solid #E2E8F0' }}>
+          <Grid size={{ xs: 12, md: 6 }} sx={{ animation: 'slideInUp 0.6s ease 0.5s both' }}>
+            <Card sx={{
+              borderRadius: '16px',
+              height: '100%',
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%)',
+              border: '1px solid rgba(0, 100, 200, 0.2)',
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 8px 32px rgba(0, 100, 200, 0.15)',
+                transform: 'translateY(-8px)',
+                borderColor: 'rgba(0, 100, 200, 0.4)'
+              }
+            }}>
               <CardContent sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, p: 3 }}>
-                <SchoolIcon sx={{ color: '#1A2B56', fontSize: 40 }} />
+                <Box sx={{
+                  width: 60,
+                  height: 60,
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(0, 100, 200, 0.2) 0%, rgba(0, 100, 200, 0.05) 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 12px rgba(0, 100, 200, 0.1)'
+                }}>
+                  <SchoolIcon sx={{ color: '#0095D9', fontSize: 32 }} />
+                </Box>
                 <Box>
                   <Typography variant="body2" sx={{ color: '#4A5568', fontWeight: 600 }}>Приоритеты</Typography>
-                  <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800 }}>
+                  <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800, my: 0.5 }}>
                     {selectedDirectionsCount}
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#A0AEC0' }}>

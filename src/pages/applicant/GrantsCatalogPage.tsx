@@ -150,16 +150,21 @@ const GrantsCatalogPage = () => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: '#F8FAFC' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #F5F7FA 0%, #E8F0F7 100%)' }}>
+      {/* ФИЛЬТРЫ САЙДБАР */}
       <Box
         sx={{
           width: 300,
-          backgroundColor: '#fff',
-          borderRight: '1px solid #E2E8F0',
+          background: 'linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%)',
+          borderRight: '1px solid rgba(0, 182, 79, 0.1)',
           p: 4,
           display: { xs: 'none', md: 'block' },
+          boxShadow: '2px 0 12px rgba(0, 0, 0, 0.05)',
+          overflow: 'auto',
+          maxHeight: '100vh'
         }}
       >
+        <Typography variant="h6" sx={{ color: '#1A2B56', fontWeight: 700, mb: 3 }}>Фильтры</Typography>
         <GrantFilters
           filters={filters}
           onRegionsChange={(selectedRegions) => updateFilters({ selectedRegions })}
@@ -171,7 +176,9 @@ const GrantsCatalogPage = () => {
         />
       </Box>
 
-      <Box sx={{ flexGrow: 1, p: { xs: 2, md: 5 } }}>
+      {/* ОСНОВНОЙ КОНТЕНТ */}
+      <Box sx={{ flexGrow: 1, p: { xs: 2, md: 5 }, overflow: 'auto', maxHeight: '100vh' }}>
+        {/* ЗАГОЛОВОК */}
         <Box
           sx={{
             display: 'flex',
@@ -180,15 +187,16 @@ const GrantsCatalogPage = () => {
             flexDirection: { xs: 'column', md: 'row' },
             gap: 2,
             mb: 4,
+            animation: 'slideInDown 0.6s ease'
           }}
         >
           <Box>
-            <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800, mb: 1 }}>
+            <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800, mb: 1, fontSize: '2rem' }}>
               Каталог грантов и ВУЗов
             </Typography>
-            <Typography sx={{ color: '#718096' }}>
-              В заявке уже выбрано {selectedDirectionsCount} из{' '}
-              {MAX_GRANT_PREFERENCES} направлений.
+            <Typography sx={{ color: '#718096', fontSize: '1rem' }}>
+              В заявке уже выбрано <span style={{ fontWeight: 700, color: '#00B64F' }}>{selectedDirectionsCount}</span> из{' '}
+              <span style={{ fontWeight: 700, color: '#0095D9' }}>{MAX_GRANT_PREFERENCES}</span> направлений.
             </Typography>
           </Box>
           <Button
@@ -196,21 +204,33 @@ const GrantsCatalogPage = () => {
             startIcon={<AssignmentIcon />}
             onClick={() => navigate('/apply')}
             sx={{
-              backgroundColor: '#1A2B56',
-              '&:hover': { backgroundColor: '#111D3D' },
+              background: 'linear-gradient(135deg, #1A2B56 0%, #0F1B35 100%)',
+              boxShadow: '0 4px 12px rgba(26, 43, 86, 0.3)',
               textTransform: 'none',
+              fontWeight: 600,
+              px: 3,
+              py: 1.5,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 8px 24px rgba(26, 43, 86, 0.4)',
+                transform: 'translateY(-2px)'
+              }
             }}
           >
             Открыть заявку
           </Button>
         </Box>
 
+        {/* МОБИЛЬНЫЕ ФИЛЬТРЫ */}
         <Card
           sx={{
             mb: 3,
-            borderRadius: 3,
-            border: '1px solid #E2E8F0',
+            borderRadius: '16px',
+            border: '1px solid rgba(0, 182, 79, 0.2)',
             display: { xs: 'block', md: 'none' },
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)',
           }}
         >
           <Box sx={{ p: 3 }}>
@@ -226,22 +246,40 @@ const GrantsCatalogPage = () => {
           </Box>
         </Card>
 
+        {/* ПОИСК */}
         <TextField
           fullWidth
           variant="outlined"
           placeholder="Найти специальность или ВУЗ..."
           value={filters.search}
           onChange={(event) => updateFilters({ search: event.target.value })}
-          sx={{ mb: 4, backgroundColor: '#fff', borderRadius: 2 }}
+          sx={{
+            mb: 4,
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '12px',
+            '& .MuiOutlinedInput-root': {
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 4px 12px rgba(0, 182, 79, 0.1)'
+              },
+              '&.Mui-focused': {
+                boxShadow: '0 4px 20px rgba(0, 182, 79, 0.2)',
+                '& fieldset': {
+                  borderColor: '#00B64F'
+                }
+              }
+            }
+          }}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ color: '#A0AEC0' }} />
+                <SearchIcon sx={{ color: '#00B64F', fontSize: 24 }} />
               </InputAdornment>
             ),
           }}
         />
 
+        {/* FEEDBACK ALERTS */}
         {feedback ? (
           <Alert
             severity={
@@ -249,7 +287,17 @@ const GrantsCatalogPage = () => {
                 ? 'warning'
                 : 'success'
             }
-            sx={{ mb: 3 }}
+            sx={{
+              mb: 3,
+              background: feedback.includes('уже') 
+                ? 'linear-gradient(135deg, rgba(253, 193, 27, 0.1) 0%, rgba(251, 188, 5, 0.1) 100%)'
+                : 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)',
+              border: feedback.includes('уже')
+                ? '1px solid rgba(253, 193, 27, 0.3)'
+                : '1px solid rgba(76, 175, 80, 0.3)',
+              borderRadius: '12px',
+              animation: 'slideInDown 0.4s ease'
+            }}
             onClose={() => setFeedback('')}
           >
             {feedback}
@@ -257,13 +305,20 @@ const GrantsCatalogPage = () => {
         ) : null}
 
         {error ? (
-          <Alert severity="error" sx={{ mb: 3 }}>
+          <Alert severity="error" sx={{
+            mb: 3,
+            background: 'linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(229, 57, 53, 0.1) 100%)',
+            border: '1px solid rgba(244, 67, 54, 0.3)',
+            borderRadius: '12px',
+            animation: 'slideInDown 0.4s ease'
+          }}>
             {error}
           </Alert>
         ) : null}
 
-        <Typography sx={{ color: '#4A5568', mb: 3 }}>
-          Найдено: {filteredPrograms.length} программ
+        {/* РЕЗУЛЬТАТЫ */}
+        <Typography sx={{ color: '#4A5568', mb: 3, fontWeight: 600 }}>
+          Найдено: <span style={{ fontSize: '1.2rem', color: '#00B64F', fontWeight: 700 }}>{filteredPrograms.length}</span> программ
         </Typography>
 
         {isLoading ? (
@@ -275,12 +330,18 @@ const GrantsCatalogPage = () => {
               justifyContent: 'center',
             }}
           >
-            <CircularProgress sx={{ color: '#1A2B56' }} />
+            <CircularProgress sx={{ color: '#00B64F' }} size={50} />
           </Box>
         ) : filteredPrograms.length === 0 ? (
-          <Card sx={{ borderRadius: 3, border: '1px solid #E2E8F0' }}>
-            <Box sx={{ p: 4 }}>
-              <Typography sx={{ color: '#1A2B56', fontWeight: 700, mb: 1 }}>
+          <Card sx={{
+            borderRadius: '16px',
+            border: '2px dashed rgba(0, 182, 79, 0.2)',
+            background: 'linear-gradient(135deg, rgba(0, 182, 79, 0.05) 0%, rgba(0, 182, 79, 0.02) 100%)',
+            boxShadow: 'none'
+          }}>
+            <Box sx={{ p: 6, textAlign: 'center' }}>
+              <SearchIcon sx={{ fontSize: 60, color: '#CBD5E0', mb: 2 }} />
+              <Typography sx={{ color: '#1A2B56', fontWeight: 700, mb: 1, fontSize: '1.2rem' }}>
                 Ничего не найдено
               </Typography>
               <Typography sx={{ color: '#718096' }}>
@@ -289,9 +350,11 @@ const GrantsCatalogPage = () => {
             </Box>
           </Card>
         ) : (
-          <Grid container spacing={3}>
-            {filteredPrograms.map((program) => (
-              <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={program.id}>
+          <Grid container spacing={3} sx={{ animation: 'slideInUp 0.6s ease' }}>
+            {filteredPrograms.map((program, index) => (
+              <Grid size={{ xs: 12, sm: 6, lg: 4 }} key={program.id} sx={{
+                animation: `slideInUp 0.6s ease ${index * 0.05}s both`
+              }}>
                 <UniversityCard
                   program={program}
                   isSelected={selectedProgramIds.has(program.id)}

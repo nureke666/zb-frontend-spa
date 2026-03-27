@@ -169,28 +169,34 @@ const LandingPage = () => {
       <section className="news">
         <div className="container">
           <div className="news-header">
-            <h2 className="section-title" style={{ textAlign: 'left', margin: 0 }}>Последние новости</h2>
+            <h2>Последние новости</h2>
             <a href="#" className="link-all">Все новости →</a>
           </div>
           
           <div className="news-grid">
             <div className="news-card">
               <img src="https://via.placeholder.com/350x200" alt="News" />
-              <span className="news-date">12.12.2023</span>
-              <p className="news-text">Старт приема заявок на новый учебный год...</p>
-              <a href="#" className="news-read">Читать далее</a>
+              <div className="news-card-content">
+                <span className="news-date">12.12.2023</span>
+                <p className="news-text">Старт приема заявок на новый учебный год...</p>
+                <a href="#" className="news-read">Читать далее →</a>
+              </div>
             </div>
             <div className="news-card">
               <img src="https://via.placeholder.com/350x200" alt="News" />
-              <span className="news-date">15.12.2023</span>
-              <p className="news-text">Встреча со студентами в Актау прошла успешно...</p>
-              <a href="#" className="news-read">Читать далее</a>
+              <div className="news-card-content">
+                <span className="news-date">15.12.2023</span>
+                <p className="news-text">Встреча со студентами в Актау прошла успешно...</p>
+                <a href="#" className="news-read">Читать далее →</a>
+              </div>
             </div>
             <div className="news-card">
               <img src="https://via.placeholder.com/350x200" alt="News" />
-              <span className="news-date">20.12.2023</span>
-              <p className="news-text">Новые условия для получения грантов...</p>
-              <a href="#" className="news-read">Читать далее</a>
+              <div className="news-card-content">
+                <span className="news-date">20.12.2023</span>
+                <p className="news-text">Новые условия для получения грантов...</p>
+                <a href="#" className="news-read">Читать далее →</a>
+              </div>
             </div>
           </div>
         </div>

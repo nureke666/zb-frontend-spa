@@ -27,7 +27,7 @@ const readJson = <T>(key: string): T | null => {
   }
 };
 
-export const isMockApiEnabled = import.meta.env.VITE_USE_MOCK_API !== 'false';
+export const isMockApiEnabled = import.meta.env.VITE_USE_MOCK_API !== 'true';
 
 export const authStorage = {
   getAccessToken: () => storage?.getItem(ACCESS_TOKEN_KEY) ?? null,
@@ -83,6 +83,83 @@ apiClient.interceptors.request.use((config) => {
 
   return config;
 });
+
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown, token?: string | null) => {
+  failedQueue.forEach((item) => {
+    if (error) {
+      item.reject(error);
+    } else if (token) {
+      item.resolve(token);
+    }
+  });
+
+  failedQueue = [];
+};
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return apiClient(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const refreshToken = authStorage.getRefreshToken();
+
+      if (!refreshToken) {
+        isRefreshing = false;
+        authStorage.clear();
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      try {
+        const response = await axios.post<any>(
+          `${API_BASE_URL}/auth/refresh`,
+          { refreshToken },
+        );
+
+        const newAccessToken = response.data.accessToken;
+        const newRefreshToken = response.data.refreshToken;
+
+        authStorage.setAccessToken(newAccessToken);
+        if (newRefreshToken) {
+          authStorage.setRefreshToken(newRefreshToken);
+        }
+
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        processQueue(null, newAccessToken);
+        isRefreshing = false;
+
+        return apiClient(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        isRefreshing = false;
+        authStorage.clear();
+        window.location.href = '/login';
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 export const mapApiError = (error: unknown): ApiErrorResponse => {
   if (axios.isAxiosError<ApiErrorResponse>(error)) {

@@ -162,23 +162,74 @@ const getMeWithMock = async (): Promise<User> => {
   return user;
 };
 
-const loginWithApi = async (payload: LoginRequest) => {
-  const response = await apiClient.post<AuthResponse>('/auth/login', payload);
-  return response.data;
+const loginWithApi = async (payload: LoginRequest): Promise<AuthResponse> => {
+  const resp = await apiClient.post<any>('/auth/login', {
+    email: payload.identifier,
+    password: payload.password,
+  });
+  // Преобразуем ответ от бэка в нужный формат
+  return {
+    accessToken: resp.data.accessToken,
+    refreshToken: resp.data.refreshToken,
+    user: {
+      id: resp.data.id || 'default-id',
+      email: resp.data.email,
+      firstName: resp.data.firstName || '',
+      lastName: resp.data.lastName || '',
+      patronymic: resp.data.patronymic || null,
+      iin: resp.data.iin || null,
+      role: 'APPLICANT' as const,
+    },
+  };
 };
 
-const registerWithApi = async (payload: RegisterRequest) => {
-  const response = await apiClient.post<AuthResponse>('/auth/register', payload);
-  return response.data;
+const registerWithApi = async (payload: RegisterRequest): Promise<AuthResponse> => {
+  await apiClient.post<any>('/auth/register', {
+    email: payload.email,
+    password: payload.password,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    patronymic: payload.patronymic,
+    iin: payload.iin,
+  });
+  
+  // После регистрации нужно верифицировать OTP
+  // Пока возвращаем временный ответ
+  return {
+    accessToken: '',
+    refreshToken: '',
+    user: {
+      id: 'pending',
+      email: payload.email,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      patronymic: payload.patronymic || null,
+      iin: payload.iin,
+      role: 'APPLICANT' as const,
+    },
+  };
 };
 
-const getMeWithApi = async () => {
-  const response = await apiClient.get<User>('/users/me');
-  return response.data;
+const getMeWithApi = async (): Promise<User> => {
+  const resp = await apiClient.get<any>('/users/me');
+  return {
+    id: resp.data.id,
+    email: resp.data.email,
+    firstName: resp.data.firstName || '',
+    lastName: resp.data.lastName || '',
+    patronymic: resp.data.patronymic || null,
+    iin: resp.data.iin || null,
+    role: 'APPLICANT' as const,
+  };
 };
 
 const logoutFromApi = async () => {
-  await apiClient.post('/auth/logout');
+  const refreshToken = authStorage.getRefreshToken();
+  if (refreshToken) {
+    await apiClient.post('/auth/logout', {
+      refreshToken: refreshToken,
+    });
+  }
 };
 
 const shouldUseMockAuth = () => isMockApiEnabled;

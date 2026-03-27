@@ -265,7 +265,7 @@ const ApplyWizardPage = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        backgroundColor: '#F5F7FA',
+        background: 'linear-gradient(135deg, #F5F7FA 0%, #E8F0F7 100%)',
         py: 6,
         px: 2,
         display: 'flex',
@@ -276,14 +276,14 @@ const ApplyWizardPage = () => {
         <Stack
           direction={{ xs: 'column', md: 'row' }}
           spacing={2}
-          sx={{ justifyContent: 'space-between', mb: 4 }}
+          sx={{ justifyContent: 'space-between', mb: 4, animation: 'slideInDown 0.6s ease' }}
         >
           <Box>
-            <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800 }}>
+            <Typography variant="h4" sx={{ color: '#1A2B56', fontWeight: 800, fontSize: '2rem' }}>
               Заявка на грант
             </Typography>
-            <Typography sx={{ color: '#718096', mt: 1 }}>
-              Черновик сохраняется автоматически и готов к подключению backend API.
+            <Typography sx={{ color: '#718096', mt: 1, fontSize: '1rem' }}>
+              Заполните все этапы заявки и отправьте на рассмотрение
             </Typography>
           </Box>
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
@@ -304,13 +304,29 @@ const ApplyWizardPage = () => {
                     ? 'warning'
                     : 'default'
               }
-              sx={{ fontWeight: 700 }}
+              sx={{
+                fontWeight: 700,
+                transition: 'all 0.3s ease',
+                '&:hover': { transform: 'scale(1.05)' }
+              }}
             />
             <Button
               variant="outlined"
               startIcon={<SaveOutlinedIcon />}
               onClick={handleSaveDraft}
-              sx={{ color: '#1A2B56', borderColor: '#CBD5E0' }}
+              sx={{
+                color: '#1A2B56',
+                borderColor: '#00B64F',
+                borderWidth: '2px',
+                fontWeight: 600,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 182, 79, 0.08)',
+                  borderColor: '#00B64F',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(0, 182, 79, 0.2)'
+                }
+              }}
             >
               Сохранить
             </Button>
@@ -318,17 +334,31 @@ const ApplyWizardPage = () => {
         </Stack>
 
         {isJustSaved ? (
-          <Alert icon={<CheckCircleOutlineIcon />} severity="success" sx={{ mb: 3 }}>
-            Черновик сохранен.
+          <Alert icon={<CheckCircleOutlineIcon />} severity="success" sx={{
+            mb: 3,
+            background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)',
+            border: '1px solid rgba(76, 175, 80, 0.3)',
+            borderRadius: '12px',
+            animation: 'slideInDown 0.4s ease'
+          }}>
+            Черновик сохранен. Изменения синхронизированы.
           </Alert>
         ) : null}
 
         <Card
           sx={{
             mb: 4,
-            borderRadius: 3,
-            border: '1px solid #E2E8F0',
-            boxShadow: 'none',
+            borderRadius: '16px',
+            border: '1px solid rgba(0, 182, 79, 0.2)',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.06)',
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease',
+            animation: 'slideInUp 0.6s ease 0.1s both',
+            '&:hover': {
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              transform: 'translateY(-4px)'
+            }
           }}
         >
           <CardContent sx={{ p: { xs: 3, md: 4 } }}>
@@ -340,17 +370,35 @@ const ApplyWizardPage = () => {
           </CardContent>
         </Card>
 
-        <Card sx={{ borderRadius: 3, boxShadow: '0px 8px 24px rgba(0,0,0,0.05)' }}>
+        <Card sx={{
+          borderRadius: '16px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+          background: 'rgba(255, 255, 255, 0.95)',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
+          transition: 'all 0.3s ease',
+          animation: 'slideInUp 0.6s ease 0.2s both',
+          '&:hover': {
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.12)',
+            transform: 'translateY(-4px)'
+          }
+        }}>
           <CardContent sx={{ p: { xs: 3, md: 5 } }}>
             {draft.currentStep !== 2 && stepError ? (
-              <Alert severity="error" sx={{ mb: 3 }}>
+              <Alert severity="error" sx={{
+                mb: 3,
+                background: 'linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, rgba(229, 57, 53, 0.1) 100%)',
+                border: '1px solid rgba(244, 67, 54, 0.3)',
+                borderRadius: '12px',
+                animation: 'slideInDown 0.4s ease'
+              }}>
                 {stepError}
               </Alert>
             ) : null}
 
             {renderCurrentStep()}
 
-            <Divider sx={{ my: 4 }} />
+            <Divider sx={{ my: 4, borderColor: 'rgba(0, 0, 0, 0.08)' }} />
 
             <Box
               sx={{
@@ -362,7 +410,15 @@ const ApplyWizardPage = () => {
             >
               <Button
                 onClick={handleBack}
-                sx={{ color: '#4A5568', fontWeight: 600 }}
+                sx={{
+                  color: '#4A5568',
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    color: '#1A2B56',
+                    backgroundColor: 'rgba(0, 182, 79, 0.08)'
+                  }
+                }}
               >
                 ← Назад
               </Button>
@@ -370,10 +426,16 @@ const ApplyWizardPage = () => {
                 variant="contained"
                 onClick={handleNext}
                 sx={{
-                  backgroundColor: '#00C853',
+                  background: 'linear-gradient(135deg, #00B64F 0%, #00A844 100%)',
                   px: 4,
                   py: 1.5,
-                  '&:hover': { backgroundColor: '#00A844' },
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(0, 182, 79, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    boxShadow: '0 8px 24px rgba(0, 182, 79, 0.4)',
+                    transform: 'translateY(-2px)'
+                  }
                 }}
               >
                 {isLastStep ? 'Отправить заявку' : 'Сохранить и продолжить'}
